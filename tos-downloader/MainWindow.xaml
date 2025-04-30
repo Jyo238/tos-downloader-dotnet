@@ -1,0 +1,52 @@
+﻿<Window x:Class="tos_downloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="救世者之樹 主程式自動下載器" Height="650" Width="520">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="選擇下載資料夾："/>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="PathBox" Width="350"/>
+                <Button Content="瀏覽" Click="Browse_Click" Margin="4,0,0,0"/>
+            </StackPanel>
+
+            <Button Content="載入下載清單" Click="LoadList_Click" Width="150" Margin="0,6,0,0"/>
+            <CheckBox x:Name="ParallelBox" Content="多檔並行下載（最多 4）" IsChecked="True" Margin="0,6,0,0"/>
+
+            <!-- 勾選檔案清單 -->
+            <!-- 注意：已移除 ListBox 上的 ItemsSource="{Binding}"，因為在 C# 中設定 -->
+            <ListBox x:Name="FileList" Height="300" Margin="0,6,0,0"
+                     SelectionMode="Extended">
+                <!-- 可選：允許多選，但下載仍基於 CheckBox -->
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel LastChildFill="True">
+                            <!-- CheckBox 綁定 IsSelected，並立即更新來源 -->
+                            <CheckBox DockPanel.Dock="Left"
+                                      IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                      Width="20"
+                                      VerticalAlignment="Center"/>
+                            <!-- 檔案名稱 -->
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding FileName}" Width="260" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                            <!-- 下載狀態，過長時顯示省略號 -->
+                            <TextBlock Text="{Binding Status}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- 控制按鈕區域 -->
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <Button  x:Name="StartBtn" Content="開始下載"   Click="StartDownload_Click" Width="100"/>
+                <Button x:Name="PauseBtn"  Content="暫停下載" Click="Pause_Click"  Width="80" IsEnabled="False" Margin="6,0,0,0"/>
+                <Button x:Name="ResumeBtn" Content="繼續下載" Click="Resume_Click" Width="80" IsEnabled="False" Margin="6,0,0,0"/>
+            </StackPanel>
+
+            <!-- 下載日誌區域 -->
+            <TextBlock Text="下載日誌：" Margin="0,6,0,0"/>
+            <TextBox x:Name="LogBox" Height="120" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+            <!-- TextWrapping="Wrap" 使日誌自動換行 -->
+        </StackPanel>
+    </DockPanel>
+</Window>
