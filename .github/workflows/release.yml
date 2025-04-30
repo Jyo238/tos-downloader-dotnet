@@ -1,0 +1,67 @@
+name: .NET WPF Release CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release WPF App
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      # *** 修正：在 restore 指令中加入 runtime ***
+      run: dotnet restore ./tos-downloader/tos-downloader.sln --runtime win-x64
+
+    - name: Build and publish (Framework-Dependent)
+      # *** 不變：publish 保持 --no-restore，因為 restore 已處理 runtime ***
+      run: dotnet publish ./tos-downloader/tos-downloader.csproj --configuration Release --runtime win-x64 --output ./publish --no-restore --self-contained false /p:PublishSingleFile=false /p:IncludeNativeLibrariesForSelfExtract=false
+
+    - name: Get Tag Name
+      id: get_tag
+      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $env:GITHUB_OUTPUT
+
+    - name: Determine Asset Name Base
+      id: asset_name
+      run: echo "NAME=tos-downloader-${{ steps.get_tag.outputs.TAG_NAME }}" >> $env:GITHUB_OUTPUT
+
+    - name: Archive publish folder
+      shell: pwsh
+      run: |
+        if (Test-Path ./publish) {
+          Compress-Archive -Path ./publish/* -DestinationPath ./${{ steps.asset_name.outputs.NAME }}.zip -Force
+        } else {
+          Write-Error "Publish directory './publish' not found!"
+          exit 1
+        }
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        name: Release ${{ steps.get_tag.outputs.TAG_NAME }}
+        body: |
+          Automated release for version ${{ steps.get_tag.outputs.TAG_NAME }}
+          - Built WPF application (Framework-Dependent for Windows x64)
+          - Packaged as ZIP archive
+          **Requires [.NET 8.0 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/8.0)**
+        draft: false
+        prerelease: false
+        files: |
+          ./${{ steps.asset_name.outputs.NAME }}.zip
