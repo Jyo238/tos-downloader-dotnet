@@ -3,15 +3,15 @@ name: .NET WPF Release CI
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # 只在推送 v 開頭的 tag 時觸發
 
 permissions:
-  contents: write
+  contents: write # 需要權限來建立 Release 和上傳檔案
 
 jobs:
   build-and-release:
-    name: Build and Release WPF App
-    runs-on: windows-latest
+    name: Build and Release WPF App (Single File)
+    runs-on: windows-latest # WPF 需要 Windows 環境
 
     steps:
     - name: Checkout code
@@ -22,13 +22,14 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      # *** 修正：在 restore 指令中加入 runtime ***
+    - name: Restore dependencies (with Runtime)
+      # Restore 時加入 runtime 解決 NETSDK1047 錯誤
       run: dotnet restore ./tos-downloader/tos-downloader.sln --runtime win-x64
 
-    - name: Build and publish (Framework-Dependent)
-      # *** 不變：publish 保持 --no-restore，因為 restore 已處理 runtime ***
-      run: dotnet publish ./tos-downloader/tos-downloader.csproj --configuration Release --runtime win-x64 --output ./publish --no-restore --self-contained false /p:PublishSingleFile=false /p:IncludeNativeLibrariesForSelfExtract=false
+    - name: Build and publish (Single File, Framework-Dependent)
+      # *** 修改點：啟用 PublishSingleFile ***
+      # /p:IncludeNativeLibrariesForSelfExtract=true 確保 WPF 需要的本地庫包含在內
+      run: dotnet publish ./tos-downloader/tos-downloader.csproj --configuration Release --runtime win-x64 --output ./publish --no-restore --self-contained false /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Get Tag Name
       id: get_tag
@@ -36,10 +37,12 @@ jobs:
 
     - name: Determine Asset Name Base
       id: asset_name
+      # 保持 ZIP 檔名格式
       run: echo "NAME=tos-downloader-${{ steps.get_tag.outputs.TAG_NAME }}" >> $env:GITHUB_OUTPUT
 
-    - name: Archive publish folder
+    - name: Archive single executable
       shell: pwsh
+      # 將 publish 資料夾內的 *所有* 內容壓縮 (主要就是那個單檔 exe，可能還有 pdb)
       run: |
         if (Test-Path ./publish) {
           Compress-Archive -Path ./publish/* -DestinationPath ./${{ steps.asset_name.outputs.NAME }}.zip -Force
@@ -58,9 +61,10 @@ jobs:
         name: Release ${{ steps.get_tag.outputs.TAG_NAME }}
         body: |
           Automated release for version ${{ steps.get_tag.outputs.TAG_NAME }}
-          - Built WPF application (Framework-Dependent for Windows x64)
+          - Built WPF application as a **single file executable** (Framework-Dependent for Windows x64)
           - Packaged as ZIP archive
           **Requires [.NET 8.0 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/8.0)**
+          *(Single-file executables might still trigger security warnings upon first run)*
         draft: false
         prerelease: false
         files: |
