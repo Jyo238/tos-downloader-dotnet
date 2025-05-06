@@ -12,7 +12,13 @@
 *   **自動化：** 自動從官網解析最新的主程式分段檔案連結 (`.exe`, `.bin`)，省去手動尋找和複製的麻煩。
 *   **效率：** 支援多檔案同時下載及斷點續傳，最大化利用你的網路頻寬，並在網路中斷後能從上次進度繼續。
 *   **使用者友善：** 提供直觀的圖形介面，輕鬆選擇下載路徑、勾選檔案並監控下載進度。
-*   **更少的誤報：** 相較於使用 PyInstaller 等工具打包的 Python 腳本，原生編譯的 .NET 應用程式結構更標準，能顯著降低被 Windows Defender 或其他防毒軟體誤判為惡意軟體的機率。
+
+---
+
+
+## 功能截圖
+
+![功能截圖](./images/app-cap.JPG)
 
 ---
 
@@ -53,7 +59,7 @@
 
 ### 步驟
 
-1.  **克隆 (Clone) 儲存庫：**
+1.  **Clone Repository：**
     ```bash
     git clone https://github.com/YOUR_USERNAME/tos-downloader.git
     cd tos-downloader

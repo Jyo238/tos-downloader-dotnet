@@ -65,6 +65,8 @@ jobs:
           - Packaged as ZIP archive
           **Requires [.NET 8.0 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/8.0)**
           *(Single-file executables might still trigger security warnings upon first run)*
+
+          ![.NET 8 Desktop Runtime Requirement Screenshot](https://github.com/${{ github.repository }}/raw/${{ github.ref_name }}/images/runtime.JPG)
         draft: false
         prerelease: false
         files: |

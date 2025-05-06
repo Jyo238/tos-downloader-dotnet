@@ -12,7 +12,7 @@
             </StackPanel>
 
             <Button Content="載入下載清單" Click="LoadList_Click" Width="150" Margin="0,6,0,0"/>
-            <CheckBox x:Name="ParallelBox" Content="多檔並行下載（最多 4）" IsChecked="True" Margin="0,6,0,0"/>
+            <CheckBox x:Name="ParallelBox" Content="多檔並行下載" IsChecked="True" Margin="0,6,0,0"/>
 
             <!-- 勾選檔案清單 -->
             <!-- 注意：已移除 ListBox 上的 ItemsSource="{Binding}"，因為在 C# 中設定 -->
